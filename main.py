@@ -50,3 +50,21 @@ def punctuation_to_features(df, column):
     return df[column]
 
 df['text'] = punctuation_to_features(df, 'text')
+
+nltk.download('punkt')
+
+def tokenize(column):
+    """Tokenizes a `pandas` dataframe column and returns a list of tokens.
+
+    Args:
+        column: `pandas` dataframe column (i.e. `df['text']`).
+
+    Returns:
+        tokens (list): Tokenized list, i.e. [Fourthbrain, MLO4, Capstone]
+
+    """
+
+    tokens = nltk.word_tokenize(column)
+    return [w for w in tokens if w.isalpha()]
+
+df['tokenized'] = df.apply(lambda x: tokenize(x['text']), axis=1)
