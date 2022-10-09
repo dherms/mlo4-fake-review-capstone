@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Initial training of fake review model."""
+"""Initial training of fake review model.
+
+https://practicaldatascience.co.uk/machine-learning/how-to-build-a-fake-review-detection-model
+"""
 import time
 import pandas as pd
 import numpy as np
@@ -20,3 +23,30 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from xgboost import XGBClassifier
 from lightgbm import LGBMClassifier
 from catboost import CatBoostClassifier
+
+pd.set_option('max_colwidth', None)
+df = pd.read_csv('data/fake reviews dataset.csv', names=['category', 'rating', 'label', 'text'])
+
+df['text'] = df['text'].str.replace('\n', ' ')
+df['target'] = np.where(df['label']=='CG', 1, 0)
+
+def punctuation_to_features(df, column):
+    """Identify punctuation within a column and convert to a text representation.
+
+    Args:
+        df (object): Pandas dataframe.
+        column (string): Name of column containing text.
+
+    Returns:
+        df[column]: Original column with punctuation converted to text,
+                    i.e. "Wow!" > "Wow exclamation"
+
+"""
+    df[column] = df[column].replace('!', ' exclamation ')
+    df[column] = df[column].replace('?', ' question ')
+    df[column] = df[column].replace('\'', ' quotation ')
+    df[column] = df[column].replace('\"', ' quotation ')
+
+    return df[column]
+
+df['text'] = punctuation_to_features(df, 'text')
