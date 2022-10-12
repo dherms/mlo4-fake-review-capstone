@@ -85,3 +85,17 @@ def remove_stopwords(tokenized_column):
     return [word for word in tokenized_column if not word in stops]
 
 df['stopwords_removed'] = df.apply(lambda x: remove_stopwords(x['tokenized']), axis=1)
+
+def apply_stemming(tokenized_column):
+    """Return a list of tokens with Porter stemming applied.
+
+    Args:
+        column: Pandas dataframe column of tokenized data with stopwords removed.
+
+    Returns:
+        tokens (list): Tokenized list with words Porter stemmed.
+
+    """
+
+    stemmer = PorterStemmer()
+    return [stemmer.stem(word).lower() for word in tokenized_column]
