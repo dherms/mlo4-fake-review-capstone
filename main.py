@@ -68,3 +68,20 @@ def tokenize(column):
     return [w for w in tokens if w.isalpha()]
 
 df['tokenized'] = df.apply(lambda x: tokenize(x['text']), axis=1)
+
+nltk.download('stopwords')
+
+def remove_stopwords(tokenized_column):
+    """Return a list of tokens with English stopwords removed.
+
+    Args:
+        column: Pandas dataframe column of tokenized data from `tokenize()`
+
+    Returns:
+        tokens (list): Tokenized list with stopwords removed.
+
+    """
+    stops = set(stopwords.words("english"))
+    return [word for word in tokenized_column if not word in stops]
+
+df['stopwords_removed'] = df.apply(lambda x: remove_stopwords(x['tokenized']), axis=1)
