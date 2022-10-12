@@ -103,6 +103,50 @@ def apply_stemming(tokenized_column):
 df['porter_stemmed'] = df.apply(lambda x: apply_stemming(x['stopwords_removed']), axis=1)
 
 def rejoin_words(tokenized_column):
-    return ( " ".join(tokenized_column))
+    return  " ".join(tokenized_column)
 
 df['all_text'] = df.apply(lambda x: rejoin_words(x['porter_stemmed']), axis=1)
+
+## Training and test
+
+X = df['all_text']
+y = df['target']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3,\
+                                                     random_state=1, shuffle=True)
+
+classifiers = {}
+classifiers.update({"XGBClassifier": XGBClassifier(eval_metric='logloss',
+                                                   objective='binary:logistic',
+                                                   )})
+classifiers.update({"CatBoostClassifier": CatBoostClassifier(silent=True)})
+classifiers.update({"LinearSVC": LinearSVC()})
+classifiers.update({"MultinomialNB": MultinomialNB()})
+classifiers.update({"LGBMClassifier": LGBMClassifier()})
+classifiers.update({"RandomForestClassifier": RandomForestClassifier()})
+classifiers.update({"DecisionTreeClassifier": DecisionTreeClassifier()})
+classifiers.update({"ExtraTreeClassifier": ExtraTreeClassifier()})
+classifiers.update({"AdaBoostClassifier": AdaBoostClassifier()})
+classifiers.update({"KNeighborsClassifier": KNeighborsClassifier()})
+classifiers.update({"RidgeClassifier": RidgeClassifier()})
+classifiers.update({"SGDClassifier": SGDClassifier()})
+classifiers.update({"BaggingClassifier": BaggingClassifier()})
+classifiers.update({"BernoulliNB": BernoulliNB()})
+
+df_models = pd.DataFrame(columns=['model', 'run_time', 'roc_auc', 'roc_auc_std'])
+
+for key in classifiers:
+
+    start_time = time.time()
+    pipeline = Pipeline([("tfidf", TfidfVectorizer()), ("clf", classifiers[key] )])
+    cv = cross_val_score(pipeline, X, y, cv=5, scoring='roc_auc')
+
+    row = {'model': key,
+           'run_time': format(round((time.time() - start_time)/60,2)),
+           'roc_auc': cv.mean(),
+           'roc_auc_std': cv.std(),
+    }
+
+    df_models = df_models.append(row, ignore_index=True)
+
+df_models = df_models.sort_values(by='roc_auc', ascending=False)
