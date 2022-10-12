@@ -101,3 +101,8 @@ def apply_stemming(tokenized_column):
     return [stemmer.stem(word).lower() for word in tokenized_column]
 
 df['porter_stemmed'] = df.apply(lambda x: apply_stemming(x['stopwords_removed']), axis=1)
+
+def rejoin_words(tokenized_column):
+    return ( " ".join(tokenized_column))
+
+df['all_text'] = df.apply(lambda x: rejoin_words(x['porter_stemmed']), axis=1)
