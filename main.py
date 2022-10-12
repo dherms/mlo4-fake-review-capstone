@@ -150,3 +150,19 @@ for key in classifiers:
     df_models = df_models.append(row, ignore_index=True)
 
 df_models = df_models.sort_values(by='roc_auc', ascending=False)
+
+bundled_pipeline = Pipeline([("tfidf", TfidfVectorizer()),
+                             ("clf", SGDClassifier())
+                            ])
+bundled_pipeline.fit(X_train, y_train)
+y_pred = bundled_pipeline.predict(X_test)
+
+accuracy_score = accuracy_score(y_test, y_pred)
+precision_score = precision_score(y_test, y_pred)
+recall_score = recall_score(y_test, y_pred)
+roc_auc_score = roc_auc_score(y_test, y_pred)
+
+print('Accuracy:', accuracy_score)
+print('Precision:', precision_score)
+print('Recall:', recall_score)
+print('ROC/AUC:', roc_auc_score)
