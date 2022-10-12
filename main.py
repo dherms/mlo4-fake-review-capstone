@@ -99,3 +99,5 @@ def apply_stemming(tokenized_column):
 
     stemmer = PorterStemmer()
     return [stemmer.stem(word).lower() for word in tokenized_column]
+
+df['porter_stemmed'] = df.apply(lambda x: apply_stemming(x['stopwords_removed']), axis=1)
