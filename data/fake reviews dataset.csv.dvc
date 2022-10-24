@@ -1,0 +1,4 @@
+outs:
+- md5: 177a386fab45e3f85d140728b2387967
+  size: 15324616
+  path: fake reviews dataset.csv
