@@ -1,11 +1,13 @@
-import joblib
+import onnxruntime as onxrt
 from fastapi import FastAPI
 from pydantic import BaseModel
 
 class Review(BaseModel):
     text: str
 
-model = joblib.load('model.joblib')
+sess = onxrt.InferenceSession("sgd_fake_review.onnx")
+input_name = sess.get_inputs()[0].name
+label_name = sess.get_outputs()[0].name
 
 app = FastAPI(title="Fake Review Detector")
 
@@ -15,5 +17,5 @@ async def root():
 
 @app.post("/classify_review")
 async def classify_review(review: Review):
-    prediction = model.predict([review.text])
-    return {"prediction": int(prediction[0])}
+    pred_onx = sess.run([label_name], {input_name: [review.text]})[0]
+    return {"prediction": int(pred_onx)}
