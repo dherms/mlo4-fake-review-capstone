@@ -24,7 +24,9 @@ from xgboost import XGBClassifier
 from lightgbm import LGBMClassifier
 from catboost import CatBoostClassifier
 
-import joblib
+from skl2onnx import convert_sklearn
+from skl2onnx.common.data_types import StringTensorType
+
 
 pd.set_option('max_colwidth', None)
 df = pd.read_csv('data/fake reviews dataset.csv', names=['category', 'rating', 'label', 'text'])
@@ -169,5 +171,8 @@ print('Precision:', precision_score)
 print('Recall:', recall_score)
 print('ROC/AUC:', roc_auc_score)
 
-#Export classifier
-joblib.dump(bundled_pipeline, 'model.joblib')
+#Export classifier to ONNX
+initial_type = [('string_input', StringTensorType())]
+onx = convert_sklearn(bundled_pipeline, initial_types=initial_type)
+with open("sgd_fake_review.onnx", "wb") as f:
+    f.write(onx.SerializeToString())
