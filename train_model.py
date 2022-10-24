@@ -24,7 +24,7 @@ from xgboost import XGBClassifier
 from lightgbm import LGBMClassifier
 from catboost import CatBoostClassifier
 
-from sklearn.externals import joblib
+import joblib
 
 pd.set_option('max_colwidth', None)
 df = pd.read_csv('data/fake reviews dataset.csv', names=['category', 'rating', 'label', 'text'])
