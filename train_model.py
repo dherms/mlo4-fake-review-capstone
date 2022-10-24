@@ -24,6 +24,8 @@ from xgboost import XGBClassifier
 from lightgbm import LGBMClassifier
 from catboost import CatBoostClassifier
 
+from sklearn.externals import joblib
+
 pd.set_option('max_colwidth', None)
 df = pd.read_csv('data/fake reviews dataset.csv', names=['category', 'rating', 'label', 'text'])
 
@@ -166,3 +168,6 @@ print('Accuracy:', accuracy_score)
 print('Precision:', precision_score)
 print('Recall:', recall_score)
 print('ROC/AUC:', roc_auc_score)
+
+#Export classifier
+joblib.dump(bundled_pipeline, 'model.joblib')
