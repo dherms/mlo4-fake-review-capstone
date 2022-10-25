@@ -15,7 +15,7 @@ app = FastAPI(title="Fake Review Detector")
 async def root():
     return {"message": "OK"}
 
-@app.post("/classify_review")
+@app.post("/classify_review", tags=["Classify Review"])
 async def classify_review(review: Review):
     pred_onx = sess.run([label_name], {input_name: [review.text]})[0]
     return {"prediction": int(pred_onx)}
