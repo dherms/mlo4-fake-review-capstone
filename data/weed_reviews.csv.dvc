@@ -1,0 +1,4 @@
+outs:
+- md5: 8b35a9a3f526b5125e60d073541cfb8c
+  size: 523053
+  path: weed_reviews.csv
