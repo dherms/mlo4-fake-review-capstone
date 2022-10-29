@@ -175,6 +175,6 @@ print('F1 Score', f1_score)
 
 #Export classifier to ONNX
 initial_type = [('string_input', StringTensorType())]
-onx = convert_sklearn(bundled_pipeline, initial_types=initial_type)
-with open("sgd_fake_review.onnx", "wb") as f:
+onx = convert_sklearn(bundled_pipeline, initial_types=initial_type, target_opset=15)
+with open("model.onnx", "wb") as f:
     f.write(onx.SerializeToString())
