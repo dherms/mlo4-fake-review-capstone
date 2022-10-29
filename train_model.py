@@ -27,6 +27,9 @@ from catboost import CatBoostClassifier
 from skl2onnx import convert_sklearn
 from skl2onnx.common.data_types import StringTensorType
 
+import mlflow
+import mlflow.sklearn
+
 
 pd.set_option('max_colwidth', None)
 df = pd.read_csv('data/fake reviews dataset.csv', names=['category', 'rating', 'label', 'text'])
@@ -139,21 +142,16 @@ classifiers.update({"BernoulliNB": BernoulliNB()})
 
 df_models = pd.DataFrame(columns=['model', 'run_time', 'roc_auc', 'roc_auc_std'])
 
+mlflow.set_experiment(experiment_name="Fake Review Detector")
+
 for key in classifiers:
+    with mlflow.start_run():
+        pipeline = Pipeline([("tfidf", TfidfVectorizer()), ("clf", classifiers[key])])
+        cv = cross_val_score(pipeline, X, y, cv=5, scoring='roc_auc')
 
-    start_time = time.time()
-    pipeline = Pipeline([("tfidf", TfidfVectorizer()), ("clf", classifiers[key] )])
-    cv = cross_val_score(pipeline, X, y, cv=5, scoring='roc_auc')
-
-    row = {'model': key,
-           'run_time': format(round((time.time() - start_time)/60,2)),
-           'roc_auc': cv.mean(),
-           'roc_auc_std': cv.std(),
-    }
-
-    df_models = df_models.append(row, ignore_index=True)
-
-df_models = df_models.sort_values(by='roc_auc', ascending=False)
+        mlflow.log_metric("roc_auc", cv.mean())
+        mlflow.log_metric("roc_auc_std", cv.std())
+        mlflow.sklearn.log_model(pipeline, key+"_model")
 
 bundled_pipeline = Pipeline([("tfidf", TfidfVectorizer()),
                              ("clf", SGDClassifier())
