@@ -3,7 +3,6 @@
 
 https://practicaldatascience.co.uk/machine-learning/how-to-build-a-fake-review-detection-model
 """
-import time
 import pandas as pd
 import numpy as np
 import nltk
@@ -26,6 +25,9 @@ from catboost import CatBoostClassifier
 
 from skl2onnx import convert_sklearn
 from skl2onnx.common.data_types import StringTensorType
+
+import mlflow
+import mlflow.sklearn
 
 
 pd.set_option('max_colwidth', None)
@@ -139,21 +141,19 @@ classifiers.update({"BernoulliNB": BernoulliNB()})
 
 df_models = pd.DataFrame(columns=['model', 'run_time', 'roc_auc', 'roc_auc_std'])
 
+experiment_id = mlflow.set_experiment(experiment_name="Fake Review Detector").experiment_id
+
 for key in classifiers:
+    with mlflow.start_run():
+        pipeline = Pipeline([("tfidf", TfidfVectorizer()), ("clf", classifiers[key])])
+        cv_auc = cross_val_score(pipeline, X, y, cv=5, scoring='roc_auc')
+        cv_f1 = cross_val_score(pipeline, X, y, cv=5, scoring='f1')
 
-    start_time = time.time()
-    pipeline = Pipeline([("tfidf", TfidfVectorizer()), ("clf", classifiers[key] )])
-    cv = cross_val_score(pipeline, X, y, cv=5, scoring='roc_auc')
-
-    row = {'model': key,
-           'run_time': format(round((time.time() - start_time)/60,2)),
-           'roc_auc': cv.mean(),
-           'roc_auc_std': cv.std(),
-    }
-
-    df_models = df_models.append(row, ignore_index=True)
-
-df_models = df_models.sort_values(by='roc_auc', ascending=False)
+        mlflow.log_metric("roc_auc", cv_auc.mean())
+        mlflow.log_metric("roc_auc_std", cv_auc.std())
+        mlflow.log_metric("f1", cv_f1.mean())
+        mlflow.log_metric("f1_std", cv_f1.std())
+        mlflow.sklearn.log_model(pipeline, "model")
 
 bundled_pipeline = Pipeline([("tfidf", TfidfVectorizer()),
                              ("clf", SGDClassifier())
@@ -165,11 +165,13 @@ accuracy_score = accuracy_score(y_test, y_pred)
 precision_score = precision_score(y_test, y_pred)
 recall_score = recall_score(y_test, y_pred)
 roc_auc_score = roc_auc_score(y_test, y_pred)
+f1_score = f1_score(y_test, y_pred)
 
 print('Accuracy:', accuracy_score)
 print('Precision:', precision_score)
 print('Recall:', recall_score)
 print('ROC/AUC:', roc_auc_score)
+print('F1 Score', f1_score)
 
 #Export classifier to ONNX
 initial_type = [('string_input', StringTensorType())]
