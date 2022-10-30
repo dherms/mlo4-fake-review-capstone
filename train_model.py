@@ -3,7 +3,6 @@
 
 https://practicaldatascience.co.uk/machine-learning/how-to-build-a-fake-review-detection-model
 """
-import time
 import pandas as pd
 import numpy as np
 import nltk
@@ -142,16 +141,19 @@ classifiers.update({"BernoulliNB": BernoulliNB()})
 
 df_models = pd.DataFrame(columns=['model', 'run_time', 'roc_auc', 'roc_auc_std'])
 
-mlflow.set_experiment(experiment_name="Fake Review Detector")
+experiment_id = mlflow.set_experiment(experiment_name="Fake Review Detector").experiment_id
 
 for key in classifiers:
     with mlflow.start_run():
         pipeline = Pipeline([("tfidf", TfidfVectorizer()), ("clf", classifiers[key])])
-        cv = cross_val_score(pipeline, X, y, cv=5, scoring='roc_auc')
+        cv_auc = cross_val_score(pipeline, X, y, cv=5, scoring='roc_auc')
+        cv_f1 = cross_val_score(pipeline, X, y, cv=5, scoring='f1')
 
-        mlflow.log_metric("roc_auc", cv.mean())
-        mlflow.log_metric("roc_auc_std", cv.std())
-        mlflow.sklearn.log_model(pipeline, key+"_model")
+        mlflow.log_metric("roc_auc", cv_auc.mean())
+        mlflow.log_metric("roc_auc_std", cv_auc.std())
+        mlflow.log_metric("f1", cv_f1.mean())
+        mlflow.log_metric("f1_std", cv_f1.std())
+        mlflow.sklearn.log_model(pipeline, "model")
 
 bundled_pipeline = Pipeline([("tfidf", TfidfVectorizer()),
                              ("clf", SGDClassifier())
