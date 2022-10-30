@@ -165,11 +165,13 @@ accuracy_score = accuracy_score(y_test, y_pred)
 precision_score = precision_score(y_test, y_pred)
 recall_score = recall_score(y_test, y_pred)
 roc_auc_score = roc_auc_score(y_test, y_pred)
+f1_score = f1_score(y_test, y_pred)
 
 print('Accuracy:', accuracy_score)
 print('Precision:', precision_score)
 print('Recall:', recall_score)
 print('ROC/AUC:', roc_auc_score)
+print('F1 Score', f1_score)
 
 #Export classifier to ONNX
 initial_type = [('string_input', StringTensorType())]
