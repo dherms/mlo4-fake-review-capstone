@@ -1,0 +1,7 @@
+---
+- name: Ping MLFlow Inventory
+  hosts: tag_Name_MLFlow_Model_Registry
+  remote_user: ubuntu
+  tasks:
+    - name: Ping
+      command: echo "Hello World"
