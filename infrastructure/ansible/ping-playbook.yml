@@ -4,4 +4,4 @@
   remote_user: ubuntu
   tasks:
     - name: Ping
-      command: echo "Hello World"
+      ping:
