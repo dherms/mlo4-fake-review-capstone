@@ -1,0 +1,12 @@
+[Unit]
+Description=MLflow Tracking Server
+After=network.target
+[Service]
+Restart=on-failure
+RestartSec=30
+#StandardOutput=file:/path_to_your_logging_folder/stdout.log
+#StandardError=file:/path_to_your_logging_folder/stderr.log
+User=root
+ExecStart=/bin/bash -c 'exec mlflow server --backend-store-uri sqlite:///mlflowdb.sqlite --default-artifact-root s3://fourthbrain-fake-review-detector/mlflow/artifacts -h 0.0.0.0 -p 5000'
+[Install]
+WantedBy=multi-user.target

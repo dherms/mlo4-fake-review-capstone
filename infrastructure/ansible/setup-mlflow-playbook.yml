@@ -1,0 +1,21 @@
+---
+- name: Ping MLFlow Inventory
+  hosts: tag_Name_MLFlow_Model_Registry
+  remote_user: ubuntu
+  become: yes
+  tasks:
+    - name: Add MLFlow service
+      template:
+        src: templates/mlflow.service.j2
+        dest: /etc/systemd/system/mlflow.service
+        owner: root
+        group: root
+        mode: '0600'
+    - name: Activate MLFlow service
+      systemd:
+        name: mlflow.service
+        enabled: yes
+    - name: Start MLFlow service
+      systemd:
+        name: mlflow.service
+        state: started
