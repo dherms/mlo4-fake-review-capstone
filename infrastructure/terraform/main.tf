@@ -62,9 +62,9 @@ sudo apt-get update -y && sudo apt-get upgrade -y
 sudo apt-get install python3-pip -y
 pip3 install --upgrade --force-reinstall click black
 pip3 install mlflow
-mlflow server \
-  --default-artifact-root s3://fourthbrain-fake-review-detector/mlflow/artifacts/ \
-  --backend-store-uri sqlite:///mlflowdb.sqlite --host 0.0.0.0 --port 5000
+#mlflow server \
+#  --default-artifact-root s3://fourthbrain-fake-review-detector/mlflow/artifacts/ \
+#  --backend-store-uri sqlite:///mlflowdb.sqlite --host 0.0.0.0 --port 5000
 EOF
 
 
