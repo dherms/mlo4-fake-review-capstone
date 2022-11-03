@@ -3,7 +3,23 @@
   hosts: tag_Name_MLFlow_Model_Registry
   remote_user: ubuntu
   become: yes
+  vars_prompt:
+    - name: AWS_ACCESS_KEY_ID
+      prompt: Enter AWS Access Key ID
+    - name: AWS_SECRET_ACCESS_KEY
+      prompt: Enter AWS Secret Access Key
   tasks:
+    - name: Create AWS credentials directory
+      file:
+        path: /root/.aws
+        state: directory
+    - name: Add AWS credentials
+      template:
+        src: templates/aws_credentials.j2
+        dest: /root/.aws/credentials
+        owner: root
+        group: root
+        mode: '0600'
     - name: Add MLFlow service
       template:
         src: templates/mlflow.service.j2
@@ -15,6 +31,11 @@
       systemd:
         name: mlflow.service
         enabled: yes
+    - name: Install necessary python packages
+      pip:
+        name:
+          - awscli
+          - boto3
     - name: Start MLFlow service
       systemd:
         name: mlflow.service
