@@ -9,6 +9,11 @@
     - name: AWS_SECRET_ACCESS_KEY
       prompt: Enter AWS Secret Access Key
   tasks:
+    - name: Install python3
+      apt:
+        name:
+          - python3-pip
+        update_cache: yes
     - name: Create AWS credentials directory
       file:
         path: /root/.aws
@@ -36,6 +41,10 @@
         name:
           - awscli
           - boto3
+          - mlflow
+          - click
+          - black
+        state: forcereinstall
     - name: Start MLFlow service
       systemd:
         name: mlflow.service
