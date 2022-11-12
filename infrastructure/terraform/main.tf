@@ -34,6 +34,14 @@ resource "aws_security_group" "model_tracking_server_sg" {
   }
 
   ingress {
+    description = "TLS to model port"
+    from_port   = 8002
+    to_port     = 8002
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
     description = "SSH"
     from_port   = 22
     to_port     = 22
