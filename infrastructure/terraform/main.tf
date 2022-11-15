@@ -26,9 +26,25 @@ resource "aws_security_group" "model_tracking_server_sg" {
   vpc_id      = aws_default_vpc.default_vpc.id
 
   ingress {
+    description = "TLS to Grafana port"
+    from_port   = 3000
+    to_port     = 3000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
     description = "TLS to MLFlow port"
     from_port   = 5000
     to_port     = 5000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "TLS to prometheus"
+    from_port   = 9090
+    to_port     = 9090
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }

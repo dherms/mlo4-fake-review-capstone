@@ -1,0 +1,47 @@
+name: Dvc downloader
+inputs:
+- {name: repo_url, type: String}
+- {name: rev, type: String, default: main, optional: true}
+outputs:
+- {name: output_csv, type: Dataset}
+implementation:
+  container:
+    image: python:3.7
+    command:
+    - sh
+    - -c
+    - |2
+
+      if ! [ -x "$(command -v pip)" ]; then
+          python3 -m ensurepip || python3 -m ensurepip --user || apt-get install python3-pip
+      fi
+
+      PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet     --no-warn-script-location 'pandas' 'dvc==2.10.2' 'dvc[s3]' 'kfp==1.8.14' && "$0" "$@"
+    - sh
+    - -ec
+    - |
+      program_path=$(mktemp -d)
+      printf "%s" "$0" > "$program_path/ephemeral_component.py"
+      python3 -m kfp.v2.components.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+    - |2+
+
+      import kfp
+      from kfp.v2 import dsl
+      from kfp.v2.dsl import *
+      from typing import *
+
+      def dvc_downloader(output_csv: Output[Dataset], repo_url :str, rev:str = "main"):
+          import pandas as pd
+          import dvc.api
+
+
+          with dvc.api.open(repo=repo_url, path='data/fake reviews dataset.csv', rev=rev) as f:
+              df = pd.read_csv(f)
+
+          df.to_csv(output_csv.path, header=False, index=False)
+
+    args:
+    - --executor_input
+    - {executorInput: null}
+    - --function_to_execute
+    - dvc_downloader
