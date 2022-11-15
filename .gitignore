@@ -131,3 +131,5 @@ dmypy.json
 # others
 catboost_info
 mlruns
+.terraform*
+.aws.env

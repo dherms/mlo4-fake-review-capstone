@@ -1,0 +1,54 @@
+name: Remove stopwords
+inputs:
+- {name: data, type: Dataset}
+- {name: tokenized_column, type: String, default: tokenized, optional: true}
+outputs:
+- {name: output_csv, type: Dataset}
+implementation:
+  container:
+    image: python:3.7
+    command:
+    - sh
+    - -c
+    - |2
+
+      if ! [ -x "$(command -v pip)" ]; then
+          python3 -m ensurepip || python3 -m ensurepip --user || apt-get install python3-pip
+      fi
+
+      PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet     --no-warn-script-location 'pandas' 'nltk' 'kfp==1.8.14' && "$0" "$@"
+    - sh
+    - -ec
+    - |
+      program_path=$(mktemp -d)
+      printf "%s" "$0" > "$program_path/ephemeral_component.py"
+      python3 -m kfp.v2.components.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+    - |2+
+
+      import kfp
+      from kfp.v2 import dsl
+      from kfp.v2.dsl import *
+      from typing import *
+
+      def remove_stopwords(data: Input[Dataset], output_csv: Output[Dataset], tokenized_column:str ='tokenized'):
+          import nltk
+          from nltk.corpus import stopwords
+          import pandas as pd
+
+          df = pd.read_csv(data.path)
+
+          nltk.download('stopwords')
+
+          def remove_row_stopwords(row):
+              stops = set(stopwords.words("english"))
+              return [word for word in row if not word in stops]
+
+          df['stopwords_removed'] = df.apply(lambda x: remove_row_stopwords(x[tokenized_column]), axis=1)
+
+          df.to_csv(output_csv.path, index=False, header=False)
+
+    args:
+    - --executor_input
+    - {executorInput: null}
+    - --function_to_execute
+    - remove_stopwords

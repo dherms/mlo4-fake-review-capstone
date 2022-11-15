@@ -1,0 +1,49 @@
+name: Rejoin words
+inputs:
+- {name: data, type: Dataset}
+- {name: tokenized_column, type: String, default: porter_stemmed, optional: true}
+outputs:
+- {name: output_csv, type: Dataset}
+implementation:
+  container:
+    image: python:3.7
+    command:
+    - sh
+    - -c
+    - |2
+
+      if ! [ -x "$(command -v pip)" ]; then
+          python3 -m ensurepip || python3 -m ensurepip --user || apt-get install python3-pip
+      fi
+
+      PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet     --no-warn-script-location 'pandas' 'kfp==1.8.14' && "$0" "$@"
+    - sh
+    - -ec
+    - |
+      program_path=$(mktemp -d)
+      printf "%s" "$0" > "$program_path/ephemeral_component.py"
+      python3 -m kfp.v2.components.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+    - |2+
+
+      import kfp
+      from kfp.v2 import dsl
+      from kfp.v2.dsl import *
+      from typing import *
+
+      def rejoin_words(data: Input[Dataset], output_csv: Output[Dataset], tokenized_column:str ='porter_stemmed'):
+          import pandas as pd
+
+          df = pd.read_csv(data.path)
+
+          def rejoin_words_row(row):
+              return  " ".join(row)
+
+          df['all_text'] = df.apply(lambda x: rejoin_words_row(x[tokenized_column]), axis=1)
+
+          df.to_csv(output_csv.path, index=False, header=False)
+
+    args:
+    - --executor_input
+    - {executorInput: null}
+    - --function_to_execute
+    - rejoin_words
